@@ -1,0 +1,15 @@
+{
+    "app" :{
+        "port" : 5000
+    },
+    "minio":{
+        "endPoint": "localhost",
+        "port" : 9000,
+        "accessKey" : "walfeyAuH6adGREgRTpl",
+        "secretKey" : "sfD73CpyUmxE85nGtnzM4whmiXr0oFXeQisuNLzM",
+        "useSSL" : false
+    },
+    "mongo" : {
+        "uri" : "mongodb+srv://yaseen:test123@cluster0.iqhxnl7.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+    }
+}

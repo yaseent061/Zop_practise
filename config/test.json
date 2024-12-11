@@ -1,0 +1,15 @@
+{
+    "app" :{
+        "port" : 5000
+    },
+    "minio":{
+        "endPoint": "127.0.0.1",
+        "port" : 9000,
+        "accessKey" : "abc",
+        "secretKey" : "xyz",
+        "useSSL" : false
+    },
+    "mongo" : {
+        "uri" : "oeafenamvje"
+    }
+}

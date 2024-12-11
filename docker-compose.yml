@@ -1,0 +1,158 @@
+
+services :
+  minio: 
+    image : minio/minio:latest
+    container_name : minio
+    environment : 
+      MINIO_ROOT_USER : "abc"
+      MINIO_ROOT_PASSWORD : "12345678"
+      MINIO_LOG_DIR : "/var/log"
+      MINIO_PROMETHEUS_AUTH_TYPE: "public" 
+    ports : 
+      - "9000:9000"
+      - "9001:9001"
+    healthcheck:
+      test: ["CMD", "curl", "--silent", "--fail", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 20s
+    volumes : 
+      - minio-data:/data
+      - ./minioLogs:/var/logs
+    command : minio server --address ':9000' --console-address ':9001' --json /data 
+    networks :
+      - app-network
+
+  node-app : 
+    build : 
+      context : .
+    container_name : mark1
+    environment : 
+      - NODE_ENV=production
+      - OTEL_SERVICE_NAME=datapool
+    ports : 
+      - "5000:5000"
+    volumes :
+      - ./appLogs:/app/dist/logger/logs
+    healthcheck:
+      test: ["CMD", "curl", "--silent", "--fail", "http://localhost:5000/health"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
+    depends_on : 
+      - minio
+      - redis
+    restart: on-failure
+    networks :
+      - app-network
+  
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - /tmp/loki:/tmp/loki
+    networks :
+      - app-network
+    depends_on : 
+      - promtail
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    volumes:
+      - ./appLogs:/app/logs:ro
+      - ./minioLogs:/minio/logs:ro
+      - ./promtail.yaml:/etc/promtail/promtail.yaml
+    command: -config.file=/etc/promtail/promtail.yaml
+    ports:
+      - "9080:9080"
+    networks : 
+      - app-network
+    depends_on : 
+      - node-app
+    
+  grafana:  
+    image: grafana/grafana:latest
+    container_name: grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: "admin"  
+    ports:
+      - "3000:3000"  
+    volumes:
+      - grafana-data:/var/lib/grafana  
+    networks:
+      - app-network
+    depends_on:
+      - loki
+      - node-app
+      - prometheus
+  
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    environment:
+      MINIO_ACCESS_KEY: "jAtCFsi640sWYwDNXaJx"     
+      MINIO_SECRET_KEY: "qd5ZxQP4Bj586GZ6OiTk9feqyfbvoJ5Jbk2EOW9O" 
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yaml 
+    networks:
+      - app-network
+    depends_on:
+      - minio
+      - node-app
+
+  # otel-collector:
+  #   image: otel/opentelemetry-collector-contrib:latest
+  #   volumes:
+  #     - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
+  #   ports:
+  #     - 13133:13133 
+  #     - 4317:4317 
+  #     - 4318:4318
+  #   networks:
+  #     - app-network
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.21
+    container_name: jaeger
+    environment:
+      - COLLECTOR_ZIPKIN_HTTP_HTTP_PORT=9411 
+      - COLLECTOR_OTLP_ENABLED=true 
+    ports:
+      - "5775:5775"  
+      - "5778:5778"  
+      - "6831:6831"  
+      - "6832:6832"  
+      - "5777:5777"  
+      - "16686:16686"   
+      - "14250:14250"  
+      - "14268:14268"  
+      - "14250:14250"  
+    volumes:
+      - jaeger-storage:/var/lib/jaeger  
+    networks:
+      - app-network
+  
+  redis:
+    image: redis:latest  
+    container_name: redis
+    ports:
+      - "6379:6379"  
+    networks:
+      - app-network
+
+volumes : 
+  minio-data :
+  grafana-data :
+  jaeger-storage :
+
+networks : 
+  app-network :
+    driver : bridge
+    name : app-network

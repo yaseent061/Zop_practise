@@ -1,0 +1,43 @@
+auth_enabled: false  
+
+server:
+  http_listen_port: 3100  
+
+ingester:
+  ring:
+    kvstore:
+      store: inmemory
+  zone : "zone-1"
+  max_chunk_age: 1h            
+  chunk_target_size: 1048576   
+  chunk_idle_period: 5m       
+  max_chunks_per_stream: 200  
+  flush_deadline: 1m          
+
+storage_config:
+  boltdb_shipper:
+    directory: /tmp/loki/index  
+  filesystem:
+    directory: /tmp/loki/chunks
+
+table_manager:
+  retention_deletes_enabled: true   
+  retention_period: 7d            
+
+frontend:
+  compress_responses: true         
+  query_timeout: 1m                
+  max_outstanding_per_tenant: 1000
+  max_in_flight_requests: 5        
+
+limits_config:
+  max_query_length: 7d           
+  max_entries_limit: 5000         
+  max_series_limit: 50000        
+  split_queries_by_interval: 30m  
+
+distributor:
+  ring:
+    kvstore:
+      store: inmemory
+
