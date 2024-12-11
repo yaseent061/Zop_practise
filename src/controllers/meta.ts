@@ -2,6 +2,7 @@ import { Image } from "../model/image";
 import { Request,Response } from "express";
 import { FilterQuery } from "mongoose";
 import { getCache, setCache } from "../db/redis";
+import logger from "../logger/logger";
 export default async function meta(req : Request, res : Response){
     const {name,fileType} = req.query;
     const size_gt = Number(req.query['size.gt']);
@@ -37,6 +38,7 @@ export default async function meta(req : Request, res : Response){
         else{
             imageInfo = await Image.findOne(queryFilter);    
         }
+        logger.info("Image found: " + imageInfo)
         res.json(imageInfo);    
         
     }catch(e){

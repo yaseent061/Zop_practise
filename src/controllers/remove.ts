@@ -22,6 +22,7 @@ export default async function remove(req: Request, res: Response){
         
         session.commitTransaction();
         session.endSession();
+        deleteCache(fileName);  
 
         logger.info(`Image ${fileName} removed successfully`);
         res.send("Image removed successfully");
