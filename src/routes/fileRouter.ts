@@ -6,6 +6,7 @@ import update from "../controllers/update";
 import remove from "../controllers/remove";
 import metrics from "../controllers/metrics";
 import healthCheck from "../controllers/healthCheck";
+import fileData from "../controllers/fileData";
 
 const fileRouter = (router : Router) : Router=>{
     router.post('/binary', upload); 
@@ -14,7 +15,9 @@ const fileRouter = (router : Router) : Router=>{
     router.put('/binary/:name', update);
     router.delete('/binary/:name', remove);
     router.get('/metrics',metrics);
-    router.get('health', healthCheck);
+    router.get('/health', healthCheck);
+    router.get('/binary/fileData/:name', fileData);
+
     return router
 }
 

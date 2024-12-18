@@ -1,12 +1,12 @@
 import { Image } from "../model/image";
 import { Request,Response } from "express";
 import { FilterQuery } from "mongoose";
-import { getCache, setCache } from "../db/redis";
+import RedisService from "../db/redisService";
 import logger from "../logger/logger";
-import {getCacheKey} from "../db/redis";
+import getCacheKey from "../util/cacheKey";
+import ModelService from '../db/modelService';
 export default async function meta(req: Request, res: Response) {
     const { name, fileType } = req.query;
-    console.log(req.query, "****************")
     const size_gt = Number(req.query['size.gt']);
     const size_lt = Number(req.query['size.lt']);
     const size_eq = Number(req.query['size.eq']);
@@ -28,14 +28,17 @@ export default async function meta(req: Request, res: Response) {
 
     try {
         let imageInfo;
-        getCache(String(cacheStr), async (data: string, err: Error) => {
-            if (err) {
-                imageInfo = await Image.find(queryFilter);
-                setCache(String(cacheStr), JSON.stringify(imageInfo));
-                return
-            }
-            imageInfo = JSON.parse(data);
-        })
+        let redis = RedisService.getInstance();
+        let model = ModelService.getInstance(Image);
+        let cacheData = await redis.getCache(cacheStr)
+        if(cacheData){
+            imageInfo = JSON.parse(cacheData);
+        }
+        else{
+            imageInfo = await model.find(queryFilter);
+            redis.setCache(cacheStr, JSON.stringify(imageInfo));
+        }   
+
         logger.info("Image found: " + imageInfo)
         res.json(imageInfo);
 

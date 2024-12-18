@@ -11,5 +11,9 @@
     },
     "mongo" : {
         "uri" : "mongodb+srv://yaseen:test123@cluster0.iqhxnl7.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+    },
+    "redis" : {
+        "port" : 6379,
+        "host" : "localhost"
     }
 }

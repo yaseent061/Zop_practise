@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import minioClient from "../db/minio";
+import minioClient from "../db/minioService";
 import busboy from "busboy";
 import { Image } from "../model/image";
 import logger from "../logger/logger";

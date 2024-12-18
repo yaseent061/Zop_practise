@@ -1,9 +1,10 @@
 import { Request,Response } from "express";
-import minioClient from "../db/minio";
+import MinioService from "../db/minioService";
 import busboy from "busboy";
 import { Image } from "../model/image";
 import logger from "../logger/logger";
-import {setCache} from "../db/redis";
+import RedisService from "../db/redisService";
+import ModelService from "../db/modelService";
 
 export default function upload(req:Request , res:Response) : void{
 
@@ -15,11 +16,14 @@ export default function upload(req:Request , res:Response) : void{
         const fileName = info.filename;
         const size : number = Number(req.headers["content-length"]);
         const fileType = fileName.split('.')[1];
-    
-        let session = await Image.startSession();
+        let model = ModelService.getInstance(Image);
+        
+        let session = await model.startSession();
         session.startTransaction();
         try{
-            let found = await Image.findOne({name : fileName});
+            let redis = RedisService.getInstance();
+            let minio = MinioService.getInstance();
+            let found = await model.findOne({name : fileName});
             if(found){ 
                 logger.error("Image already exists");
                 return res.status(400).send("Image already exists")
@@ -33,14 +37,9 @@ export default function upload(req:Request , res:Response) : void{
 
             await imageMetaData.save({session});
 
-            await minioClient.putObject(
-                bucketName,
-                fileName,
-                file,
-                size,
-            )
+            minio.uploadFile(bucketName ,fileName ,file ,size);    
+
             await session.commitTransaction();
-            setCache(fileName,JSON.stringify(imageMetaData));
 
             logger.info("MetaData and file uploaded");
             res.send("File uploaded successfully");
