@@ -4,7 +4,7 @@ init();
 import express from "express";
 import fileRouter from "./routes/fileRouter";
 import config from "config";
-import connectMongoDb from "./db/mongo";
+import MongoConnection from "./db/mongoConnection";
 import logger from "./logger/logger";
 import metrics from "./middlewares/metrics";
 
@@ -15,7 +15,7 @@ const router = express.Router();
 app.use(metrics)
 app.use(fileRouter(router));
 
-connectMongoDb();
+MongoConnection.connect();
 
 app.listen(port,()=>{
     logger.info(`App listening on port ${port}`);

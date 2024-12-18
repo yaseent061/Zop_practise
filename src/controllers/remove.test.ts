@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import {Image} from "../model/image";
-import minioClient from "../db/minio";
+import minioClient from "../db/minioService";
 import logger from "../logger/logger";
 import remove from "./remove";
 

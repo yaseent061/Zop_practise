@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "/Users/raramuri/Desktop/Practise/src/logger/logs/.38dcb692b9a1ce9ee428d2eb2839a79a946ea5b3-audit.json",
+    "files": [
+        {
+            "date": 1734519430133,
+            "name": "/Users/raramuri/Desktop/Practise/src/logger/logs/app-2024-12-18.log",
+            "hash": "0395daca4830ab33fe54eb9deaa0c267e75f67eb6ab71676ae80150c679e75f0"
+        }
+    ],
+    "hashType": "sha256"
+}
